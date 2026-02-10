@@ -7,8 +7,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -24,35 +24,55 @@ public class CitaServiceTest {
     private CitaService service;
 
     @Test
-    public void cuandoGuardaCita_entoncesRetornaCitaGuardada() {
-        // Arrange (Preparar datos)
+    void cuandoGuardaCita_entoncesRetornaCitaGuardada() {
         Cita cita = new Cita();
         cita.setNombrePaciente("Andres Peralta");
-        cita.setNombreDoctor("Dr. House");
-        cita.setFechaCita(LocalDateTime.now().plusDays(1));
-        cita.setMotivo("Consulta General");
-
-        // Simulamos que el repositorio guarda cualquier cita y devuelve la misma cita
         when(repository.save(any(Cita.class))).thenReturn(cita);
 
-        // Act (Ejecutar)
         Cita guardada = service.guardar(cita);
 
-        // Assert (Verificar)
-        assertNotNull(guardada, "La cita guardada no debería ser nula");
+        assertNotNull(guardada);
         assertEquals("Andres Peralta", guardada.getNombrePaciente());
-
-        // Verificamos que el método save del repositorio se llamó exactamente 1 vez
         verify(repository, times(1)).save(cita);
     }
 
     @Test
-    public void cuandoListaCitas_entoncesRetornaLista() {
-        // Simulamos que la base de datos devuelve una lista con 1 cita
+    void cuandoListaCitas_entoncesRetornaLista() {
         when(repository.findAll()).thenReturn(List.of(new Cita()));
-
         List<Cita> lista = service.listarTodas();
+        assertFalse(lista.isEmpty());
+    }
 
-        assertFalse(lista.isEmpty(), "La lista no debería estar vacía");
+    // --- NUEVOS TESTS PARA COMPLETAR EL 100% DEL CRUD ---
+
+    @Test
+    void cuandoEliminaCita_entoncesLlamaRepository() {
+        Long id = 1L;
+        // Simulamos que el repositorio no hace nada (void) al borrar
+        doNothing().when(repository).deleteById(id);
+
+        service.eliminar(id);
+
+        // Verificamos que el repositorio recibió la orden de borrar exactamente 1 vez
+        verify(repository, times(1)).deleteById(id);
+    }
+
+    @Test
+    void cuandoActualizaCita_entoncesRetornaCitaActualizada() {
+        Long id = 1L;
+        Cita citaExistente = new Cita();
+        citaExistente.setNombrePaciente("Paciente Antiguo");
+
+        Cita citaNueva = new Cita();
+        citaNueva.setNombrePaciente("Paciente Actualizado");
+
+        // Simulamos: 1. Encuentra la cita, 2. Guarda los cambios
+        when(repository.findById(id)).thenReturn(Optional.of(citaExistente));
+        when(repository.save(any(Cita.class))).thenReturn(citaNueva);
+
+        Cita resultado = service.actualizar(id, citaNueva);
+
+        assertEquals("Paciente Actualizado", resultado.getNombrePaciente());
+        verify(repository).save(any(Cita.class));
     }
 }

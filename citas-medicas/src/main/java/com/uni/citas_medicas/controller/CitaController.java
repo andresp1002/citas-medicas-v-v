@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/citas") // Esta ruta DEBE coincidir con Postman
+@RequestMapping("/api/citas")
 public class CitaController {
 
     @Autowired
@@ -24,7 +24,17 @@ public class CitaController {
 
     @PostMapping
     public ResponseEntity<Cita> crear(@Valid @RequestBody Cita cita) {
-        // Retorna 201 Created según pide la rúbrica [cite: 14]
         return new ResponseEntity<>(service.guardar(cita), HttpStatus.CREATED);
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<Cita> actualizar(@PathVariable Long id, @Valid @RequestBody Cita cita) {
+        return ResponseEntity.ok(service.actualizar(id, cita));
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> eliminar(@PathVariable Long id) {
+        service.eliminar(id);
+        return ResponseEntity.noContent().build();
     }
 }

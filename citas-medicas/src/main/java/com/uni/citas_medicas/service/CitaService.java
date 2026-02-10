@@ -19,4 +19,17 @@ public class CitaService {
     public Cita guardar(Cita cita) {
         return repository.save(cita);
     }
+
+    public void eliminar(Long id) {
+        repository.deleteById(id);
+    }
+
+    public Cita actualizar(Long id, Cita citaDetalles) {
+        Cita cita = repository.findById(id).orElseThrow();
+        cita.setNombrePaciente(citaDetalles.getNombrePaciente());
+        cita.setNombreDoctor(citaDetalles.getNombreDoctor());
+        cita.setFechaCita(citaDetalles.getFechaCita());
+        cita.setMotivo(citaDetalles.getMotivo());
+        return repository.save(cita);
+    }
 }
